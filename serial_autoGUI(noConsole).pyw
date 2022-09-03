@@ -18,7 +18,6 @@ switchCount = 3
 notifierCount = 200
 leaveTimes = 0
 nowStateIsLight = True
-
 ActiveWork = True
 # Arduino_Serial.write("ON".encode("utf-8"))
 # Arduino_Serial.write("OFF".encode("utf-8"))
