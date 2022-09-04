@@ -57,7 +57,7 @@ while 1:
                 ActiveWork = True
 # =============================================================================
 
-        if incoming_data > 120 and ActiveWork:
+        if incoming_data > 112 and ActiveWork:
             leaveTimes += 1
             if leaveTimes > 8:
                 leaveTimes = 0
