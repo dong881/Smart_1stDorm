@@ -6,9 +6,12 @@ import pyautogui                                   # add pyautogui library for p
 import sys
 import subprocess #執行VBS檔
 import time
+import requests
 # subprocess.call("cscript ON_FAN.vbs") # works
 # subprocess.call("cscript OFF_FAN.vbs") # works
 
+API_URL = "https://script.google.com/macros/s/AKfycbyZNKb_Q4nUfvTPBTFO4qRxBnQb6yrXond5GtXLhs5S1vbl66ul_XjovNlGNjH36Quu/exec"
+session = requests.Session()
 from win10toast import ToastNotifier
 toaster = ToastNotifier()
 
@@ -17,10 +20,13 @@ Arduino_Serial = serial.Serial('com9',115200)       # Initialize serial and Crea
 switchCount = 3
 notifierCount = 200
 leaveTimes = 0
+sitDownTimes = 0
 nowStateIsLight = True
 ActiveWork = True
 # Arduino_Serial.write("ON".encode("utf-8"))
 # Arduino_Serial.write("OFF".encode("utf-8"))
+
+session.get(API_URL+"?Fun=saveData&In=ON") #開機預設已在位置上
 
 def SWITCH_STATES(state):
     global nowStateIsLight
@@ -30,6 +36,8 @@ def SWITCH_STATES(state):
     elif not state and nowStateIsLight: 
         Arduino_Serial.write("OFF".encode("utf-8"))
         nowStateIsLight = False
+    session.get(API_URL+"?Fun=saveData&In="+("ON" if state else "OFF")) #傳送記錄目前狀態
+
 
 def SHOW_TOAST(text):
     toaster.show_toast("Warning!~",
@@ -45,8 +53,11 @@ while 1:
         incoming_data = int(orignalData) # read the serial data and print it as line
         print(incoming_data)                            # print the incoming Serial data
         
-        if incoming_data < 80:
-            leaveTimes = 0
+        if incoming_data < 80 and not ActiveWork:
+            sitDownTimes += 1
+            
+        if sitDownTimes > 3:            
+            sitDownTimes = 0
             if not ActiveWork: 
 # =============================================================================
 #              # 偵測到坐下
@@ -58,6 +69,7 @@ while 1:
 # =============================================================================
 
         if incoming_data > 112 and ActiveWork:
+            sitDownTimes = 0
             leaveTimes += 1
             if leaveTimes > 8:
                 leaveTimes = 0
@@ -108,6 +120,7 @@ while 1:
             
         incoming_data = 200                            # clears the data
     except :
+        session.get(API_URL+"?Fun=saveData&In=OFF") #跳掉預設關燈
         Arduino_Serial.close()
         sys.exit()
         
