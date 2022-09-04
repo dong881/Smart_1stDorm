@@ -10,7 +10,7 @@ import requests
 # subprocess.call("cscript ON_FAN.vbs") # works
 # subprocess.call("cscript OFF_FAN.vbs") # works
 
-API_URL = "https://script.google.com/macros/s/AKfycbyZNKb_Q4nUfvTPBTFO4qRxBnQb6yrXond5GtXLhs5S1vbl66ul_XjovNlGNjH36Quu/exec"
+API_URL = "https://script.google.com/macros/s/AKfycbyppD6ls7isUPYC172dHXx1-tn0oy9kdLqcVtJcQPrY2QuC2CV2fgywp4RJNS-p3zxr/exec"
 session = requests.Session()
 from win10toast import ToastNotifier
 toaster = ToastNotifier()
@@ -53,10 +53,10 @@ while 1:
         incoming_data = int(orignalData) # read the serial data and print it as line
         print(incoming_data)                            # print the incoming Serial data
         
-        if incoming_data < 80 and not ActiveWork:
+        if incoming_data < 60 and not ActiveWork:
             sitDownTimes += 1
             
-        if sitDownTimes > 3:            
+        if sitDownTimes > 5:            
             sitDownTimes = 0
             if not ActiveWork: 
 # =============================================================================
@@ -68,10 +68,10 @@ while 1:
                 ActiveWork = True
 # =============================================================================
 
-        if incoming_data > 112 and ActiveWork:
+        if incoming_data > 105 and ActiveWork:
             sitDownTimes = 0
             leaveTimes += 1
-            if leaveTimes > 8:
+            if leaveTimes > 15:
                 leaveTimes = 0
                 print("AUTO CLOSE SCREEN and LED ~~(",incoming_data,"cm)")
                 # pyautogui.hotkey('ctrl','alt', 'b')
