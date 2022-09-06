@@ -10,7 +10,7 @@ import requests
 # subprocess.call("cscript ON_FAN.vbs") # works
 # subprocess.call("cscript OFF_FAN.vbs") # works
 
-API_URL = "https://script.google.com/macros/s/AKfycbyppD6ls7isUPYC172dHXx1-tn0oy9kdLqcVtJcQPrY2QuC2CV2fgywp4RJNS-p3zxr/exec"
+API_URL = "https://script.google.com/macros/s/AKfycbyNwPDbggeSyJu9YITR6dGuBz4z5X_t84rwUrF-nbSibrkMcuOznFIHDX2EFybbiy2C/exec"
 session = requests.Session()
 from win10toast import ToastNotifier
 toaster = ToastNotifier()
@@ -45,18 +45,18 @@ def SHOW_TOAST(text):
                         icon_path=None,
                         duration=5,
                         threaded=(True))
-    
-while 1:
+
+while True:
     try:
         orignalData = Arduino_Serial.readline().strip().decode("utf-8")
         if orignalData == "ON" or orignalData == "OFF" : continue
         incoming_data = int(orignalData) # read the serial data and print it as line
         print(incoming_data)                            # print the incoming Serial data
         
-        if incoming_data < 60 and not ActiveWork:
+        if incoming_data < 65 and not ActiveWork:
             sitDownTimes += 1
             
-        if sitDownTimes > 5:            
+        if sitDownTimes > 10:            
             sitDownTimes = 0
             if not ActiveWork: 
 # =============================================================================
@@ -71,13 +71,12 @@ while 1:
         if incoming_data > 105 and ActiveWork:
             sitDownTimes = 0
             leaveTimes += 1
-            if leaveTimes > 15:
+            if leaveTimes > 10:
                 leaveTimes = 0
                 print("AUTO CLOSE SCREEN and LED ~~(",incoming_data,"cm)")
                 # pyautogui.hotkey('ctrl','alt', 'b')
                 SWITCH_STATES(False)
                 ActiveWork = False
-            
         elif incoming_data < 60:
             leaveTimes = 0
             notifierCount += 1
