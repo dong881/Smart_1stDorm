@@ -1,6 +1,3 @@
-# gesture control python program for controlling certain functions in windows pc
-# Code by BalaAppu
-# Website: www.electronicshub.org
 import serial                                      # add Serial library for serial communication
 import pyautogui                                   # add pyautogui library for programmatically controlling the mouse and keyboard.
 import sys
@@ -23,16 +20,16 @@ leaveTimes = 0
 sitDownTimes = 0
 nowStateIsLight = True
 ActiveWork = True
-# Arduino_Serial.write("ON".encode("utf-8"))
-# Arduino_Serial.write("OFF".encode("utf-8"))
 
 session.get(API_URL+"?Fun=saveData&In=ON") #開機預設已在位置上
 
 def SWITCH_STATES(state):
-    global nowStateIsLight
+    global nowStateIsLight, ActiveWork
+    ActiveWork = state
     if state and not nowStateIsLight: 
         Arduino_Serial.write("ON".encode("utf-8"))
         nowStateIsLight = True
+        # pyautogui.hotkey('ctrl') #貼心開螢幕
     elif not state and nowStateIsLight: 
         Arduino_Serial.write("OFF".encode("utf-8"))
         nowStateIsLight = False
@@ -46,85 +43,73 @@ def SHOW_TOAST(text):
                         duration=5,
                         threaded=(True))
 
+def CLOSE_SCREEN():
+    pyautogui.hotkey('ctrl','alt', 'b')
+
 while True:
     try:
         orignalData = Arduino_Serial.readline().strip().decode("utf-8")
         if orignalData == "ON" or orignalData == "OFF" : continue
         incoming_data = int(orignalData) # read the serial data and print it as line
-        print(incoming_data)                            # print the incoming Serial data
+        print(incoming_data, notifierCount)                            # print the incoming Serial data
         
-        if incoming_data < 65 and not ActiveWork:
-            sitDownTimes += 1
-            
-        if sitDownTimes > 10:            
-            sitDownTimes = 0
-            if not ActiveWork: 
-# =============================================================================
-#              # 偵測到坐下
-# =============================================================================
-                SWITCH_STATES(True)    
-                # pyautogui.hotkey('ctrl')
-                print("=== AUTO OPEN (",incoming_data,"cm)")
-                ActiveWork = True
-# =============================================================================
-
-        if incoming_data > 105 and ActiveWork:
-            sitDownTimes = 0
-            leaveTimes += 1
-            if leaveTimes > 10:
+        if ActiveWork: #判斷模式(Active: 我在位置工作[準備偵測離開時關燈、提醒不要離螢幕太近])
+            if incoming_data > 105:
+                sitDownTimes = 0
+                leaveTimes += 1
+                if leaveTimes > 15:
+                    leaveTimes = 0
+                    print("AUTO CLOSE SCREEN and LED ~~(",incoming_data,"cm)")
+                    SWITCH_STATES(False)
+            elif incoming_data < 60:
                 leaveTimes = 0
-                print("AUTO CLOSE SCREEN and LED ~~(",incoming_data,"cm)")
-                # pyautogui.hotkey('ctrl','alt', 'b')
-                SWITCH_STATES(False)
-                ActiveWork = False
-        elif incoming_data < 60:
-            leaveTimes = 0
-            notifierCount += 1
-            if notifierCount > 200:
-                notifierCount = 0
-                print("TOO CLOSE !! (",incoming_data,"cm)")
-                SHOW_TOAST("離螢幕太近了喔 ("+str(incoming_data)+"cm)")
-        else:
-            leaveTimes = 0
-            notifierCount = 195
-        
-# =============================================================================
-#                 # elif incoming_data < 42:
-        #     print("=== AUTO SWITCH (",incoming_data,"cm)")
-        #     if switchCount > 2:
-        #         switchCount = 0
-        #         pyautogui.keyDown('alt')                   # performs "alt+tab" operation which switches the tab
-        #         pyautogui.press('tab') 
-        #         pyautogui.keyUp('alt')
-# =============================================================================
-        
-        # if 'next' in incoming_data:                    # if incoming data is 'next'
-        #     pyautogui.hotkey('ctrl', 'pgdn')           # perform "ctrl+pgdn" operation which moves to the next tab
-            
-        # if 'previous' in incoming_data:                # if incoming data is 'previous'
-        #     pyautogui.hotkey('ctrl', 'pgup')           # perform "ctrl+pgup" operation which moves to the previous tab
-    
-        # if 'down' in incoming_data:                    # if incoming data is 'down'
-        #     #pyautogui.press('down')                   # performs "down arrow" operation which scrolls down the page
-        #     pyautogui.scroll(-100) 
-             
-        # if 'up' in incoming_data:                      # if incoming data is 'up'
-        #     #pyautogui.press('up')                      # performs "up arrow" operation which scrolls up the page
-        #     pyautogui.scroll(100)
-            
-        # if 'change' in incoming_data:                  # if incoming data is 'change'
-        #     pyautogui.keyDown('alt')                   # performs "alt+tab" operation which switches the tab
-        #     pyautogui.press('tab')
-        #     pyautogui.keyUp('alt')
-            
-        incoming_data = 200                            # clears the data
+                notifierCount += 1
+                if notifierCount > 10:
+                    notifierCount = 0
+                    print("TOO CLOSE !! (",incoming_data,"cm)")
+                    if incoming_data < 20: #特殊指令
+                        CLOSE_SCREEN()
+                        SWITCH_STATES(False)
+                    SHOW_TOAST("離螢幕太近了喔 ("+str(incoming_data)+"cm)")
+            else: # (60~105) 重置變數INIT value
+                leaveTimes = 0
+                notifierCount = 8
+        else: # not ActiveWork
+            if incoming_data > 85:  sitDownTimes = 0
+            else:                   sitDownTimes += 1
+            if sitDownTimes > 7: # 偵測到坐下      
+                sitDownTimes = 0
+                SWITCH_STATES(True)    
+                print("=== AUTO OPEN (",incoming_data,"cm)")
+                    
     except :
         session.get(API_URL+"?Fun=saveData&In=OFF") #跳掉預設關燈
         Arduino_Serial.close()
         sys.exit()
         
         
+# see error log
 # =============================================================================
 #         Exception as e:
 #         print(e)
+# =============================================================================
+
+# Serial skill
+# =============================================================================
+#   Arduino_Serial.write("ON".encode("utf-8"))
+#   Arduino_Serial.write("OFF".encode("utf-8"))
+# =============================================================================
+
+# pyautogui skill
+# =============================================================================
+#         pyautogui.hotkey('ctrl')
+#         pyautogui.keyDown('alt')                   # performs "alt+tab" operation which switches the tab
+#         pyautogui.press('tab') 
+#         pyautogui.keyUp('alt')
+#         pyautogui.hotkey('ctrl', 'pgdn')           # perform "ctrl+pgdn" operation which moves to the next tab
+#         pyautogui.hotkey('ctrl', 'pgup')           # perform "ctrl+pgup" operation which moves to the previous tab
+#         pyautogui.press('down')                   # performs "down arrow" operation which scrolls down the page
+#         pyautogui.scroll(-100) 
+#         pyautogui.press('up')                      # performs "up arrow" operation which scrolls up the page
+#         pyautogui.scroll(100)
 # =============================================================================
