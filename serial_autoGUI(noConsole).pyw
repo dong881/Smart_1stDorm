@@ -7,7 +7,7 @@ import requests
 # subprocess.call("cscript ON_FAN.vbs") # works
 # subprocess.call("cscript OFF_FAN.vbs") # works
 
-API_URL = "https://script.google.com/macros/s/AKfycbyNwPDbggeSyJu9YITR6dGuBz4z5X_t84rwUrF-nbSibrkMcuOznFIHDX2EFybbiy2C/exec"
+API_URL = "https://script.google.com/macros/s/AKfycbyXGOBIQyUtYFDaCPXK_HGjILYlMlMBSj3g5-aFcvAvFZG8niOk2PwY06MFvc3zcmV-/exec"
 session = requests.Session()
 from win10toast import ToastNotifier
 toaster = ToastNotifier()
@@ -18,6 +18,7 @@ switchCount = 3
 notifierCount = 200
 leaveTimes = 0
 sitDownTimes = 0
+noOneTimes = 0
 nowStateIsLight = True
 ActiveWork = True
 
@@ -29,7 +30,6 @@ def SWITCH_STATES(state):
     if state and not nowStateIsLight: 
         Arduino_Serial.write("ON".encode("utf-8"))
         nowStateIsLight = True
-        # pyautogui.hotkey('ctrl') #貼心開螢幕
     elif not state and nowStateIsLight: 
         Arduino_Serial.write("OFF".encode("utf-8"))
         nowStateIsLight = False
@@ -77,10 +77,17 @@ while True:
         else: # not ActiveWork
             if incoming_data > 85:  sitDownTimes = 0
             else:                   sitDownTimes += 1
-            if sitDownTimes > 7: # 偵測到坐下      
+            if sitDownTimes == 0: # 完全沒有人坐下
+                noOneTimes += 1
+                if noOneTimes == 20:
+                    CLOSE_SCREEN() # 貼心關螢幕
+                if noOneTimes > 21: noOneTimes = 21
+            elif sitDownTimes > 7: # 偵測到坐下 (確定觸發坐下指令)   
                 sitDownTimes = 0
                 SWITCH_STATES(True)    
                 print("=== AUTO OPEN (",incoming_data,"cm)")
+            else: # sitDownTimes沒有持續等於0 就重置
+                noOneTimes = 0
                     
     except :
         session.get(API_URL+"?Fun=saveData&In=OFF") #跳掉預設關燈
@@ -113,3 +120,6 @@ while True:
 #         pyautogui.press('up')                      # performs "up arrow" operation which scrolls up the page
 #         pyautogui.scroll(100)
 # =============================================================================
+
+
+# pyautogui.hotkey('ctrl') #貼心開螢幕
