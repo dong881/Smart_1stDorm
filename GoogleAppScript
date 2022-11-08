@@ -1,0 +1,85 @@
+const SEND_DONG_URL = "https://script.google.com/macros/s/AKfycbzQusYxCeQ4RwZB2A1FIxz5zhsQEWkoPKo-6F2yajh-ng5yoDZD/exec?Function=sendMsg&To=咚咚&In=";
+const SpreadSheet = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/15UfSjqgVChNDwt3HUX8In299HQQkNJswJKIU4dfky9g/edit?usp=sharing');
+const LOG_Sheet = SpreadSheet.getSheetByName('LOG');
+const HIS_Sheet = SpreadSheet.getSheetByName('History');
+const Every_Sheet = SpreadSheet.getSheetByName('EveryDay');
+var formattedDate = Utilities.formatDate(new Date(),"GMT+8","yyyy-MM-dd HH:mm:ss");
+var dayTime = Utilities.formatDate(new Date(),"GMT+8","HH:mm");
+const LOG_ROW = 4, LOG_COL = 2;    //LOG第一筆資料位置
+const TitleDay = LOG_Sheet.getRange("B2"); //標題位置
+const SaveData = LOG_Sheet.getRange("B4:B1000");  //儲存資料
+const ClearData = LOG_Sheet.getRange("B4:D2259"); //刪除資料
+
+function setHistory_daily(){
+  HIS_Sheet.insertColumnBefore(1);
+  let D = LOG_Sheet.getRange("A1").getValue()
+  var date = D.getFullYear() + "/" + (D.getMonth()+1) + "/"+D.getDate(); //取得最後更新資料日期(資料當日)
+  HIS_Sheet.getRange("A1").setValue(date);
+  SaveData.copyValuesToRange(HIS_Sheet, 1,1,2,2);
+  Every_Sheet.insertRowBefore(4);
+  Every_Sheet.getRange("B4").setValue(date);
+  Every_Sheet.getRange("C4").setValue(LOG_Sheet.getRange("G3").getValue());
+  ClearData.clear({ formatOnly: false, contentsOnly: true }); //刪除當日全部
+}
+
+function test(){
+ /*先判斷是否換日 */
+  var TitleDate = TitleDay.getValue().substr(8,5);
+  var TodayDate = Utilities.formatDate(new Date(),"GMT+8","MM/dd");
+  if(TitleDate < TodayDate) {
+    setHistory_daily();
+    TitleDay.setValue("Daily ( "+TodayDate+" )");
+  }
+}
+
+function doGet(e) {
+  var whatToReturn = "HI,這是咚咚製作的 API LINK";//obj.getURL();
+  var FunctionName,InputStr;
+  FunctionName = e.parameter.Fun;
+  InputStr = e.parameter.In;
+  if(FunctionName == "saveData"){
+    SAVE_DATA(InputStr);
+    whatToReturn = "ACK";
+  }
+  return ContentService.createTextOutput(whatToReturn);
+}
+
+
+
+function GET_ON(){
+  LOG_Sheet.insertRowBefore(4);
+  LOG_Sheet.insertRowBefore(4);
+  LOG_Sheet.insertRowBefore(4);
+  /*預留OFF時間戳位置 */
+  LOG_Sheet.getRange("A1").setValue(formattedDate);
+  LOG_Sheet.getRange("B6").setValue(dayTime);
+  LOG_Sheet.getRange("C6").setValue(0);
+  LOG_Sheet.getRange("B5").setValue(dayTime);
+  LOG_Sheet.getRange("C5").setValue(1);
+  LOG_Sheet.getRange("B4").setValue("你正");
+  LOG_Sheet.getRange("C4").setValue("坐在");
+  LOG_Sheet.getRange("D4").setValue("位置上");
+}
+
+function GET_OFF(){
+  LOG_Sheet.insertRowBefore(4);
+  LOG_Sheet.getRange("B5").setValue(dayTime);
+  LOG_Sheet.getRange("C5").setValue(1);
+  LOG_Sheet.getRange("D5").setValue("");
+  LOG_Sheet.getRange("B4").setValue(dayTime);
+  LOG_Sheet.getRange("C4").setValue(0);
+  LOG_Sheet.getRange("D4").setValue(parseInt(((new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime())%(3600*1000))/(60*1000)));
+}
+
+function SAVE_DATA(InputStr){
+  /*先判斷是否換日 */
+  var TitleDate = TitleDay.getValue().substr(8,5);
+  var TodayDate = Utilities.formatDate(new Date(),"GMT+8","MM/dd");
+  if(TitleDate < TodayDate) {
+    setHistory_daily();
+    TitleDay.setValue("Daily ( "+TodayDate+" )");
+  }
+  if(InputStr == "ON")  GET_ON();
+  else if(InputStr == "OFF")  GET_OFF();
+  else return;
+}
