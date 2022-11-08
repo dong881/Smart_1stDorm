@@ -25,3 +25,9 @@
 🟥 電腦Python負責軟體：<br>
 1. 判斷式都寫在這邊<br>
 2. 整合拿到的資料，做出控制的決策<br>
+
+========================================<br>
+🟧 雲端Google App Script 負責 API端口：<br>
+1. 接收資料串入做判斷 <br>
+2. 加上 Time code 後將資料輸出至Google sheet <br>
+3. 透過 Google 自家生態鏈利用 GAS 排版 Google Sheet <br>
