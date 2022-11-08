@@ -31,3 +31,7 @@
 1. 接收資料串入做判斷 <br>
 2. 加上 Time code 後將資料輸出至Google sheet <br>
 3. 透過 Google 自家生態鏈利用 GAS 排版 Google Sheet <br>
+
+![image](https://user-images.githubusercontent.com/52557611/200508579-7826d72e-7090-452c-9984-d16858ba6eb3.png)
+![image](https://user-images.githubusercontent.com/52557611/200508630-db91f790-70d0-4f37-9a2f-77011b82b5fb.png)
+![image](https://user-images.githubusercontent.com/52557611/200508716-a0b63234-7bbd-4126-899f-baeafdf9d480.png)
