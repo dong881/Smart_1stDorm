@@ -28,13 +28,15 @@ def SWITCH_STATES(state):
     global nowStateIsLight, ActiveWork
     ActiveWork = state
     if state and not nowStateIsLight: 
-        Arduino_Serial.write("ON".encode("utf-8"))
+        # Arduino_Serial.write("ON".encode("utf-8"))
         nowStateIsLight = True
     elif not state and nowStateIsLight: 
         Arduino_Serial.write("OFF".encode("utf-8"))
         nowStateIsLight = False
     session.get(API_URL+"?Fun=saveData&In="+("ON" if state else "OFF")) #傳送記錄目前狀態
 
+def SET_LED_COLOR():
+    Arduino_Serial.write("FUN".encode("utf-8"))
 
 def SHOW_TOAST(text):
     toaster.show_toast("Warning!~",
@@ -51,37 +53,41 @@ while True:
         orignalData = Arduino_Serial.readline().strip().decode("utf-8")
         if orignalData == "ON" or orignalData == "OFF" : continue
         incoming_data = int(orignalData) # read the serial data and print it as line
-        print(incoming_data, notifierCount)                            # print the incoming Serial data
+        print(incoming_data, notifierCount) # print the incoming Serial data
         
         if ActiveWork: #判斷模式(Active: 我在位置工作[準備偵測離開時關燈、提醒不要離螢幕太近])
             if incoming_data > 105:
                 sitDownTimes = 0
                 leaveTimes += 1
-                if leaveTimes > 15:
+                if leaveTimes > 1: #15
                     leaveTimes = 0
                     print("AUTO CLOSE SCREEN and LED ~~(",incoming_data,"cm)")
                     SWITCH_STATES(False)
             elif incoming_data < 60:
                 leaveTimes = 0
                 notifierCount += 1
-                if notifierCount > 10:
+                if incoming_data < 20: SET_LED_COLOR()
+                if notifierCount > 10: #10
                     notifierCount = 0
                     print("TOO CLOSE !! (",incoming_data,"cm)")
-                    if incoming_data < 20: #特殊指令
-                        CLOSE_SCREEN()
-                        SWITCH_STATES(False)
+# =============================================================================
+#                     if incoming_data < 20: #特殊指令
+#                         CLOSE_SCREEN()
+#                         SWITCH_STATES(False)
+# =============================================================================
                     SHOW_TOAST("離螢幕太近了喔 ("+str(incoming_data)+"cm)")
             else: # (60~105) 重置變數INIT value
                 leaveTimes = 0
-                notifierCount = 8
+                notifierCount = 8 #8
         else: # not ActiveWork
             if incoming_data > 85:  sitDownTimes = 0
             else:                   sitDownTimes += 1
             if sitDownTimes == 0: # 完全沒有人坐下
                 noOneTimes += 1
-                if noOneTimes == 20:
+                T = 5 #20
+                if noOneTimes == T: #20
                     CLOSE_SCREEN() # 貼心關螢幕
-                if noOneTimes > 21: noOneTimes = 21
+                if noOneTimes > T+1: noOneTimes = T+1
             elif sitDownTimes > 7: # 偵測到坐下 (確定觸發坐下指令)   
                 sitDownTimes = 0
                 SWITCH_STATES(True)    
