@@ -1,7 +1,10 @@
+// This is dongdong's smart dorm code
+
 #include <Adafruit_NeoPixel.h>
 const int trigPin = 10;                  //Trig Pin
 const int echoPin = 9;                  //Echo Pin
 const int relayPin = 8;                 //Relay Pin
+
 int scanDelayTime = 250; //每次掃描間隔(ms)
 // On a Trinket or Gemma we suggest changing this to 1:
 #define LED_PIN  5
