@@ -81,19 +81,18 @@ void loop() {
       if(lazyLED > 0) lazyLED -= 1000;
       else lazyLED = 0;
       theaterChase(lazyLED, 240); // orange, half brightness
-      if (val < 85)sitDownTimes += 1;
-      else         sitDownTimes =0;
+      timer1 = rangeLive+1;
+      if (val > 85)sitDownTimes = 0;
+      else         sitDownTimes += 1;
       if (sitDownTimes == 0){ // 完全沒有人坐下
           noOneTimes += 1;
           T = 5;
           if (noOneTimes > T+1) noOneTimes = T+1;
-          // if (noOneTimes > T) 可執行剛離開後一下下是事件
-      }else if (sitDownTimes > 2){ // 偵測到坐下 (確定觸發坐下指令)   
+      }else if (sitDownTimes > 1){ // 偵測到坐下 (確定觸發坐下指令)   
           sitDownTimes = 0;
           RELAY_SWITCH(true);   
       }else // sitDownTimes沒有持續等於0 就重置
           noOneTimes = 0;
-          timer1 = rangeLive+1; //強迫更新資料
   }
 //  if (Serial.available() > 0) {
 //    inStr = Serial.readString();
