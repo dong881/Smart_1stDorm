@@ -1,4 +1,4 @@
-// This is dongdong's smart dorm code
+// This is dongdong's smart dorm arduino code
 
 #include <Adafruit_NeoPixel.h>
 const int trigPin = 10;                  //Trig Pin
