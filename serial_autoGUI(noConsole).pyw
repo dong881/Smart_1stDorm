@@ -1,3 +1,6 @@
+# The following code is written by Dongdong
+# 這是運行在Windows上的上傳資料SDK，並且會在後台持續執行，除非手動由工駔管理員關閉或下指令
+
 import serial                                      # add Serial library for serial communication
 import pyautogui                                   # add pyautogui library for programmatically controlling the mouse and keyboard.
 import sys
