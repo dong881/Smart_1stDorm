@@ -1,10 +1,12 @@
-const SEND_DONG_URL = "https://script.google.com/macros/s/AKfycbzQusYxCeQ4RwZB2A1FIxz5zhsQEWkoPKo-6F2yajh-ng5yoDZD/exec?Function=sendMsg&To=咚咚&In=";
+function DB_Function() {}
+
+// const SEND_DONG_URL = "https://script.google.com/macros/s/AKfycbzQusYxCeQ4RwZB2A1FIxz5zhsQEWkoPKo-6F2yajh-ng5yoDZD/exec?Function=sendMsg&To=咚咚&In=";
 const SpreadSheet = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/15UfSjqgVChNDwt3HUX8In299HQQkNJswJKIU4dfky9g/edit?usp=sharing');
-const LOG_Sheet = SpreadSheet.getSheetByName('LOG');
-const HIS_Sheet = SpreadSheet.getSheetByName('History');
+const LOG_Sheet   = SpreadSheet.getSheetByName('LOG');
+const HIS_Sheet   = SpreadSheet.getSheetByName('History');
 const Every_Sheet = SpreadSheet.getSheetByName('EveryDay');
 var formattedDate = Utilities.formatDate(new Date(),"GMT+8","yyyy-MM-dd HH:mm:ss");
-var dayTime = Utilities.formatDate(new Date(),"GMT+8","HH:mm");
+var dayTime       = Utilities.formatDate(new Date(),"GMT+8","HH:mm");
 const LOG_ROW = 4, LOG_COL = 2;    //LOG第一筆資料位置
 const TitleDay = LOG_Sheet.getRange("B2"); //標題位置
 const SaveData = LOG_Sheet.getRange("B4:B1000");  //儲存資料
@@ -24,15 +26,18 @@ function setHistory_daily(){
 
 function test(){
  /*先判斷是否換日 */
-  var TitleDate = TitleDay.getValue().substr(8,5);
-  var TodayDate = Utilities.formatDate(new Date(),"GMT+8","MM/dd");
-  if(TitleDate < TodayDate) {
-    setHistory_daily();
-    TitleDay.setValue("Daily ( "+TodayDate+" )");
-  }
+  // var TitleDate = TitleDay.getValue().substr(8,5);
+  // var TodayDate = Utilities.formatDate(new Date(),"GMT+8","MM/dd");
+  // if(TitleDate < TodayDate) {
+  //   setHistory_daily();
+  //   TitleDay.setValue("Daily ( "+TodayDate+" )");
+  // }
+  let diff_s = new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime();
+  Logger.log(parseInt(diff_s/60000));
 }
 
-function doGet(e) {
+/* GET Method */
+DB_Function.prototype.doGET_Active = function(e){
   var whatToReturn = "HI,這是咚咚製作的 API LINK";//obj.getURL();
   var FunctionName,InputStr;
   FunctionName = e.parameter.Fun;
@@ -41,10 +46,8 @@ function doGet(e) {
     SAVE_DATA(InputStr);
     whatToReturn = "ACK";
   }
-  return ContentService.createTextOutput(whatToReturn);
+  return whatToReturn;
 }
-
-
 
 function GET_ON(){
   LOG_Sheet.insertRowBefore(4);
@@ -68,7 +71,8 @@ function GET_OFF(){
   LOG_Sheet.getRange("D5").setValue("");
   LOG_Sheet.getRange("B4").setValue(dayTime);
   LOG_Sheet.getRange("C4").setValue(0);
-  LOG_Sheet.getRange("D4").setValue(parseInt(((new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime())%(3600*1000))/(60*1000)));
+  let diff_s = new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime();
+  LOG_Sheet.getRange("D4").setValue(parseInt(diff_s/60000));
 }
 
 function SAVE_DATA(InputStr){
