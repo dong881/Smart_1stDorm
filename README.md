@@ -51,7 +51,7 @@ v2.0
     docker run -d --restart always -p 8080:8080 --privileged --device=/dev/ttyUSB0 dongdonghsu/dormpiapp:lastest
 
 - 需透過NAT技術打穿外網請求(8080 port)，推薦使用 [PiTunnel(後來發現僅14天免費試用)](https://www.pitunnel.com/)
-- 可以使用[cpolar](https://dashboard.cpolar.com)，雖然IP會浮動，但是可以爬衝更新
+- 可以使用[cpolar](https://dashboard.cpolar.com)，雖然IP會浮動，但是可以透過爬蟲更新
 
 1. 透過USB序列阜和 Arduino持續溝通<br>
 2. 收到新狀態則發送HTTP GET request to GAP API<br>
