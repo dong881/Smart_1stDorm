@@ -69,7 +69,7 @@ void loop() {
     strip.show();
     WS2812_LED_control((val-LOW_VAL)*255/(HIGH_VAL - LOW_VAL));
     
-    if (val > 110){
+    if (val > 115){
         timer1 = rangeLive+1; //強迫更新資料
         sitDownTimes = 0;
         leaveTimes += 1;
@@ -87,15 +87,19 @@ void loop() {
       timer1 = rangeLive+1;
       if (val > 85)sitDownTimes = 0;
       else         sitDownTimes += 1;
-      if (sitDownTimes == 0){ // 完全沒有人坐下
-          noOneTimes += 1;
-          T = 5;
-          if (noOneTimes > T+1) noOneTimes = T+1;
-      }else if (sitDownTimes > 1){ // 偵測到坐下 (確定觸發坐下指令)   
-          sitDownTimes = 0;
-          RELAY_SWITCH(true);   
-      }else // sitDownTimes沒有持續等於0 就重置
-          noOneTimes = 0;
+      if (sitDownTimes > 3){ // 偵測到坐下 (確定觸發坐下指令)  
+        sitDownTimes = 0;
+        RELAY_SWITCH(true); 
+      }
+      // if (sitDownTimes == 0){ // 完全沒有人坐下
+      //     noOneTimes += 1;
+      //     T = 5;
+      //     if (noOneTimes > T+1) noOneTimes = T+1;
+      // }else if (sitDownTimes > 1){ // 偵測到坐下 (確定觸發坐下指令)   
+      //     sitDownTimes = 0;
+      //     RELAY_SWITCH(true);   
+      // }else // sitDownTimes沒有持續等於0 就重置
+      //     noOneTimes = 0;
   }
 //  if (Serial.available() > 0) {
 //    inStr = Serial.readString();
