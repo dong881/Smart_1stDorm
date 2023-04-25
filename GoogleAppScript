@@ -19,12 +19,22 @@ function setHistory_daily(){
   let D = LOG_Sheet.getRange("A1").getValue()
   var date = D.getFullYear() + "/" + (D.getMonth()+1) + "/"+D.getDate(); //取得最後更新資料日期(資料當日)
   HIS_Sheet.getRange("A1").setValue(date);
-  SaveData.copyValuesToRange(HIS_Sheet, 1,1,2,2);
+  // SaveData.copyValuesToRange(HIS_Sheet, 1,1,2,2); //全部過來
+  const data = SaveData.getValues().filter((_, index) => index % 2 === 0);
+  const numRows = Math.ceil(data.length / 2);
+  const newData = [];
+  Logger.log(data[0][0])
+  if(data[0][0]=="你正") data[0][0]="正在位置上"
+  for (let i = 0; i < numRows; i++) {
+    newData.push([data[i][0]]);
+  }
+  HIS_Sheet.getRange(2, 1, numRows, 1).setValues(newData);
   Every_Sheet.insertRowBefore(4);
   Every_Sheet.getRange("B4").setValue(date);
   Every_Sheet.getRange("C4").setValue(LOG_Sheet.getRange("G3").getValue());
   ClearData.clear({ formatOnly: false, contentsOnly: true }); //刪除當日全部
 }
+
 
 function test(){
   // let nn = new Date(2023,4,25,0,0,0);
@@ -71,10 +81,10 @@ function GET_OFF(){
   LOG_Sheet.getRange("C4").setValue(0);
   let diff_s = new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime();
   LOG_Sheet.getRange("D4").setValue(parseInt(diff_s/60000));
-  recordSeatTime(new Date(), parseInt(diff_s/60000));
+  recordStayTime(new Date(), parseInt(diff_s/60000));
 }
 
-function recordSeatTime(Date, Time) {
+function recordStayTime(Date, Time) {
   const hour = Date.getHours(); // 取得這個時間戳記的小時
   const dayIndex = Date.getDay(); // 取得這個時間戳記是星期幾
   const targetCell = Analyze_Sheet.getRange(hour + 2, dayIndex + 2); // 取得要儲存資料的儲存格
