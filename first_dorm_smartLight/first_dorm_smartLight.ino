@@ -85,9 +85,9 @@ void loop() {
       else lazyLED = 0;
       theaterChase(lazyLED, 240); // orange, half brightness
       timer1 = rangeLive+1;
-      if (val > 80)sitDownTimes = 0;
+      if (val > 85 || val < 50)sitDownTimes = 0;
       else         sitDownTimes += 1;
-      if (sitDownTimes > 2){ // 偵測到坐下 (確定觸發坐下指令)  
+      if (sitDownTimes > 1){ // 偵測到坐下 (確定觸發坐下指令)  
         sitDownTimes = 0;
         RELAY_SWITCH(true); 
       }
