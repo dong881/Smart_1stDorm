@@ -5,6 +5,8 @@ const SpreadSheet = SpreadsheetApp.openByUrl('https://docs.google.com/spreadshee
 const LOG_Sheet   = SpreadSheet.getSheetByName('LOG');
 const HIS_Sheet   = SpreadSheet.getSheetByName('History');
 const Every_Sheet = SpreadSheet.getSheetByName('EveryDay');
+const Analyze_Sheet = SpreadSheet.getSheetByName('Analyze');
+
 var formattedDate = Utilities.formatDate(new Date(),"GMT+8","yyyy-MM-dd HH:mm:ss");
 var dayTime       = Utilities.formatDate(new Date(),"GMT+8","HH:mm");
 const LOG_ROW = 4, LOG_COL = 2;    //LOG第一筆資料位置
@@ -25,15 +27,11 @@ function setHistory_daily(){
 }
 
 function test(){
- /*先判斷是否換日 */
-  // var TitleDate = TitleDay.getValue().substr(8,5);
-  // var TodayDate = Utilities.formatDate(new Date(),"GMT+8","MM/dd");
-  // if(TitleDate < TodayDate) {
-  //   setHistory_daily();
-  //   TitleDay.setValue("Daily ( "+TodayDate+" )");
-  // }
-  let diff_s = new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime();
-  Logger.log(parseInt(diff_s/60000));
+  // let nn = new Date(2023,4,25,0,0,0);
+  // nn.setHours(nn.getHours()-1);
+  // Logger.log(nn.getDate() + "-" + nn.getHours());
+  // Logger.log(new Date(2023,3,25).getDay())
+  recordSeatTime(new Date(2023,3,24,0,12,0), 15);
 }
 
 /* GET Method */
@@ -73,6 +71,28 @@ function GET_OFF(){
   LOG_Sheet.getRange("C4").setValue(0);
   let diff_s = new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime();
   LOG_Sheet.getRange("D4").setValue(parseInt(diff_s/60000));
+  recordSeatTime(new Date(), parseInt(diff_s/60000));
+}
+
+function recordSeatTime(Date, Time) {
+  const hour = Date.getHours(); // 取得這個時間戳記的小時
+  const dayIndex = Date.getDay(); // 取得這個時間戳記是星期幾
+  const targetCell = Analyze_Sheet.getRange(hour + 2, dayIndex + 2); // 取得要儲存資料的儲存格
+  const currentValue = targetCell.getValue() || 0; // 取得目前儲存格的值，如果是空的就設定為0
+  if(Time <= Date.getMinutes()) targetCell.setValue(currentValue + Time); // 將這次的坐姿時間加到目前的值上
+  else { //持續時間 超過 目前時間
+    targetCell.setValue(currentValue + Date.getMinutes());
+    Time -= Date.getMinutes(); //最開始那小時所佔的時間
+    Date.setMinutes(Time%60);  //最開始那小時所佔的時間
+    Date.setHours(Date.getHours() -1);  //遞減小時數 (JS會自動判斷遞減日期)
+    /* For Last or more Hour */
+    for(let t=Time; t>0; t-=60){
+      let targetCell = Analyze_Sheet.getRange(Date.getHours() + 2, Date.getDay() + 2); // 取得要儲存資料的儲存格
+      let currentValue = targetCell.getValue() || 0; // 取得目前儲存格的值，如果是空的就設定為0
+      targetCell.setValue(currentValue + (t>60?60:t)); // 將這次的坐姿時間加到目前的值上
+      Date.setHours(Date.getHours() -1);
+    }
+  }
 }
 
 function SAVE_DATA(InputStr){
