@@ -25,8 +25,8 @@ void setup() {
   strip.setBrightness(150); // Set BRIGHTNESS to about 1/5 (max = 255)
 }
 
-const int HIGH_VAL = 80;
-const int LOW_VAL = 55;
+const int HIGH_VAL = 95;
+const int LOW_VAL = 50;
 int leaveTimes = 0;
 int sitDownTimes = 0;
 int noOneTimes = 0;
@@ -69,11 +69,11 @@ void loop() {
     strip.show();
     WS2812_LED_control((val-LOW_VAL)*255/(HIGH_VAL - LOW_VAL));
     
-    if (val > 80){
+    if (val > 100){
         timer1 = rangeLive+1; //強迫更新資料
         sitDownTimes = 0;
         leaveTimes += 1;
-        if (leaveTimes > 5){ 
+        if (leaveTimes > 3){ 
             leaveTimes = 0;
             stateMachine = 1; //reset
             RELAY_SWITCH(false); 
@@ -85,9 +85,9 @@ void loop() {
       else lazyLED = 0;
       theaterChase(lazyLED, 240); // orange, half brightness
       timer1 = rangeLive+1;
-      if (val > 65)sitDownTimes = 0;
+      if (val > 80)sitDownTimes = 0;
       else         sitDownTimes += 1;
-      if (sitDownTimes > 1){ // 偵測到坐下 (確定觸發坐下指令)  
+      if (sitDownTimes > 2){ // 偵測到坐下 (確定觸發坐下指令)  
         sitDownTimes = 0;
         RELAY_SWITCH(true); 
       }
