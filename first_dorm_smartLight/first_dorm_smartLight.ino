@@ -5,7 +5,7 @@ const int trigPin = 10;                  //Trig Pin
 const int echoPin = 9;                  //Echo Pin
 const int relayPin = 8;                 //Relay Pin
 
-int scanDelayTime = 250; //每次掃描間隔(ms)
+int scanDelayTime = 60; //每次掃描間隔(ms) 250
 // On a Trinket or Gemma we suggest changing this to 1:
 #define LED_PIN  5
 // How many NeoPixels are attached to the Arduino?
@@ -25,7 +25,7 @@ void setup() {
   strip.setBrightness(150); // Set BRIGHTNESS to about 1/5 (max = 255)
 }
 
-const int HIGH_VAL = 95;
+const int HIGH_VAL = 90;
 const int LOW_VAL = 50;
 int leaveTimes = 0;
 int sitDownTimes = 0;
@@ -69,7 +69,7 @@ void loop() {
     strip.show();
     WS2812_LED_control((val-LOW_VAL)*255/(HIGH_VAL - LOW_VAL));
     
-    if (val > 100){
+    if (val > 105){
         timer1 = rangeLive+1; //強迫更新資料
         sitDownTimes = 0;
         leaveTimes += 1;
@@ -85,8 +85,8 @@ void loop() {
       else lazyLED = 0;
       theaterChase(lazyLED, 240); // orange, half brightness
       timer1 = rangeLive+1;
-      if (val > 85 || val < 50)sitDownTimes = 0;
-      else         sitDownTimes += 1;
+      if (val > 90 || val < 50) sitDownTimes = 0;
+      else                      sitDownTimes += 1;
       if (sitDownTimes > 1){ // 偵測到坐下 (確定觸發坐下指令)  
         sitDownTimes = 0;
         RELAY_SWITCH(true); 
@@ -186,7 +186,7 @@ int scan(void){
   duration = pulseIn(echoPin, HIGH);   // 收到高電位時的時間
   cm = (duration/2) / 29.1;         // 將時間換算成距離 cm
   Serial.println(cm);
-//  delay(scanDelayTime);
+  delay(scanDelayTime);
   return cm;
 }
 
