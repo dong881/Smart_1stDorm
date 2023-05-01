@@ -138,10 +138,10 @@ void RELAY_SWITCH(boolean mode){
     Serial.println("ON");
     strip.setBrightness(160);
   }else{
+    strip.setBrightness(10);
     POWER_OFF();
     digitalWrite(relayPin, LOW);
     Serial.println("OFF");
-    strip.setBrightness(10);
   }
 }
 void POWER_ON(){
@@ -220,7 +220,7 @@ ISR(TIMER1_COMPA_vect) {
       SleepTime = 2000;
       strip.setPixelColor(random(USE_RANGE),strip.Color(0,0,0));
     }else{
-      for(int i=0;i<USE_RANGE/4;i++){
+      for(int i=0;i<USE_RANGE/5;i++){
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 5, 5));
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 69, 0));
       }
