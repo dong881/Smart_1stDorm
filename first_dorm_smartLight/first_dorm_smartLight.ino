@@ -23,15 +23,15 @@ NEED_LIGHT_STATE
   Whhite_Mode()
   while(long time leave) => SLEEP MODE
 */
-#define INIT_STATE 0
-#define WORK_STATE 1
-#define SLEEP_STATE 2
-#define NEED_LIGHT_STATE 3
+// 狀態機相關變量
+enum State {SLEEP_STATE, WORK_STATE};
+State State_Machine = WORK_STATE;
+State LastState = State_Machine;
 
 #define TURN_ON 1
 #define TURN_OFF 0
 
-const int scanDelayTime = 60; //每次掃描間隔(ms) 250
+const int scanDelayTime = 100; //每次掃描間隔(ms) 250
 
 // I/O Pin
 const int trigPin = 10;                 //Trig Pin
@@ -64,8 +64,8 @@ void setup() {
   // 初始化燈條
   strip.begin();
   strip.show(); // 關閉所有燈珠
-  strip.setBrightness(150); // Set BRIGHTNESS to about 1/5 (max = 255)
-  Serial.begin (115200);             // Serial Port begin
+  strip.setBrightness(160); // Set BRIGHTNESS to about 1/5 (max = 255)
+  Serial.begin(115200);             // Serial Port begin
 
   // INITI/O Pin
   pinMode(relayPin, OUTPUT);      //Define inputs and outputs 
@@ -75,18 +75,16 @@ void setup() {
 
 }
 
-int State_Machine = SLEEP_STATE;
-int LastState = State_Machine;
-int LED_RGB[3] = {0,0,0};
-
 // 定義上下界
 const int LOWER_THRESHOLD_DISTANCE = 80; // 下界設為 n 公分
 const int UPPER_THRESHOLD_DISTANCE = 100; // 上界設為 n 公分
 const int RED_DISTANCE = 55;
 const int GREEN_DISTANCE = 85;
-
+// 宣告需要更新 LED 燈條的變數
+bool need_update_led = false;
+int distanceVal = 0;
 void loop() {
-  int distanceVal = SCAN();
+  distanceVal = SCAN();
   CHANGE_STATE(distanceVal);
   if(LastState != State_Machine){ // run once time
     LastState = State_Machine;
@@ -99,21 +97,10 @@ void loop() {
       break;   
     }
   }
-  switch (State_Machine) {
-  case WORK_STATE:
-    const int STEP = 8;
-    int MAP_VAL = (distanceVal-RED_DISTANCE)*(255-STEP)/(GREEN_DISTANCE - RED_DISTANCE);
-    MAP_VAL =  (MAP_VAL>(255-STEP)) ? (255-STEP) : (MAP_VAL < 0)? 0 : MAP_VAL;
-    if(LED_RGB[1] != MAP_VAL){
-      LED_RGB[1] = LED_RGB[1] + ((MAP_VAL > LED_RGB[1])?STEP:-1*STEP);
-      LED_RGB[0] = 255 - LED_RGB[1];
-    }
-    break;
-  }
 }
 
 // 定義 debounce 次數
-const int DEBOUNCE_COUNT = 3;
+const int DEBOUNCE_COUNT = 20;
 // 宣告變數紀錄 debounce 次數
 int debounceCount = 0;
 // 宣告變數紀錄前一次判斷結果
@@ -186,25 +173,32 @@ int SCAN(void){
   cm = (duration/2) / 29.1;         // 將時間換算成距離 cm
   Serial.println(cm);
   delay(scanDelayTime);
+  cm = constrain(cm, 0, 150); // 將距離限制在最小值和最大值之間
   return cm;
 }
 
+int LED_RGB[3] = {0,0,0};
 // Timer1 比較匹配中斷服務程序
 int SleepTime = 0;
 ISR(TIMER1_COMPA_vect) {
-  
   static uint32_t last_update_time_30ms = 0;
   static uint32_t last_update_time_SLOW = 0;
   uint32_t current_time = millis();
   
-  if (current_time - last_update_time_30ms >= TIMER_PERIOD_MS) {
+  if (current_time - last_update_time_30ms >= TIMER_PERIOD_MS*2) {
     last_update_time_30ms = current_time;
     switch (State_Machine) {
     case WORK_STATE:
-      for (int i = 20; i < LED_COUNT; i++) 
-        strip.setPixelColor(i,strip.Color(LED_RGB[0], LED_RGB[1], LED_RGB[2]));
-      // 將顏色緩存發送到燈條
-      strip.show();  
+      const int STEP = 8;
+      int MAP_VAL = MAP_VAL = (distanceVal-RED_DISTANCE)*(255-STEP)/(GREEN_DISTANCE - RED_DISTANCE);
+      MAP_VAL =  (MAP_VAL>(255-STEP)) ? (255-STEP) : (MAP_VAL < 0)? 0 : MAP_VAL;
+      if(abs(LED_RGB[1] - MAP_VAL) > STEP){
+        LED_RGB[1] = LED_RGB[1] + ((MAP_VAL > LED_RGB[1])?STEP:-1*STEP);
+        LED_RGB[0] = 255 - LED_RGB[1];
+        for (int i = 20; i < LED_COUNT; i++) 
+          strip.setPixelColor(i, strip.Color(LED_RGB[0], LED_RGB[1], 0));
+        strip.show();  
+      }
       break;
     }
   }
