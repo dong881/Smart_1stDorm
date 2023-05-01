@@ -24,7 +24,7 @@ NEED_LIGHT_STATE
   while(long time leave) => SLEEP MODE
 */
 // 狀態機相關變量
-enum State {SLEEP_STATE, WORK_STATE};
+enum State {INIT, SLEEP_STATE, WORK_STATE,NEED_LIGHT_STATE};
 State State_Machine = WORK_STATE;
 State LastState = State_Machine;
 
@@ -71,13 +71,13 @@ void setup() {
   pinMode(relayPin, OUTPUT);      //Define inputs and outputs 
   pinMode(trigPin, OUTPUT);         
   pinMode(echoPin, INPUT);
-  RELAY_SWITCH(TURN_ON);
 
 }
 
 // 定義上下界
 const int LOWER_THRESHOLD_DISTANCE = 80; // 下界設為 n 公分
 const int UPPER_THRESHOLD_DISTANCE = 100; // 上界設為 n 公分
+const int LOWEST_DISTANCE = 7;
 const int RED_DISTANCE = 55;
 const int GREEN_DISTANCE = 85;
 // 宣告需要更新 LED 燈條的變數
@@ -95,6 +95,13 @@ void loop() {
     case SLEEP_STATE:
       RELAY_SWITCH(0);
       break;   
+    case NEED_LIGHT_STATE:
+      digitalWrite(relayPin, HIGH);
+      strip.setBrightness(200);
+      for (int i = 0; i < LED_COUNT; i++) 
+        strip.setPixelColor(i, strip.Color(255,255,255));
+      strip.show();  
+      break;
     }
   }
 }
@@ -104,13 +111,20 @@ const int DEBOUNCE_COUNT = 20;
 // 宣告變數紀錄 debounce 次數
 int debounceCount = 0;
 // 宣告變數紀錄前一次判斷結果
-bool lastResult = false;
-
+State lastResult = WORK_STATE;
+bool leaveNEED_LIGHT_STATE = true;
 void CHANGE_STATE(int distance){
-  bool result = false;
+  if(leaveNEED_LIGHT_STATE && distance < LOWEST_DISTANCE){
+    leaveNEED_LIGHT_STATE = false;
+    State_Machine = (State_Machine == NEED_LIGHT_STATE) ? lastResult : NEED_LIGHT_STATE;
+    return;
+  }else if(distance >= LOWEST_DISTANCE) leaveNEED_LIGHT_STATE = true;
+  if(State_Machine == NEED_LIGHT_STATE) return;
+
+  State result = WORK_STATE;
   // 判斷是否符合上下界
-       if (distance > UPPER_THRESHOLD_DISTANCE) result = true; // 符合上界
-  else if (distance < LOWER_THRESHOLD_DISTANCE) result = false; // 符合下界
+  if (distance > UPPER_THRESHOLD_DISTANCE) result = SLEEP_STATE; // 符合上界
+  else if (distance < LOWER_THRESHOLD_DISTANCE && distance > LOWEST_DISTANCE) result = WORK_STATE; // 符合下界
   
   // 當前判斷結果與前一次不同時，重置 debounceCount
   if (result != lastResult) debounceCount = 0;
@@ -121,12 +135,15 @@ void CHANGE_STATE(int distance){
   
   // 當 debounceCount 達到設定值時
   if (debounceCount == DEBOUNCE_COUNT) {
-    if (result) {
-      State_Machine = SLEEP_STATE;
-    } else {
-      State_Machine = WORK_STATE;
-    }
     debounceCount = 0; // 重置 debounceCount
+    switch (result){
+    case WORK_STATE:
+      State_Machine = WORK_STATE;
+      break;
+    case SLEEP_STATE:
+      State_Machine = SLEEP_STATE;
+      break;
+    }
   }
   lastResult = result; // 更新前一次判斷結果
 }
@@ -171,6 +188,7 @@ int SCAN(void){
   pinMode(echoPin, INPUT);             // 讀取 echo 的電位
   duration = pulseIn(echoPin, HIGH);   // 收到高電位時的時間
   cm = (duration/2) / 29.1;         // 將時間換算成距離 cm
+  Serial.print(State_Machine);
   Serial.println(cm);
   delay(scanDelayTime);
   cm = constrain(cm, 0, 150); // 將距離限制在最小值和最大值之間
@@ -180,12 +198,13 @@ int SCAN(void){
 int LED_RGB[3] = {0,0,0};
 // Timer1 比較匹配中斷服務程序
 int SleepTime = 0;
+int LIGHT_STATE_TIME = 0;
 ISR(TIMER1_COMPA_vect) {
   static uint32_t last_update_time_30ms = 0;
   static uint32_t last_update_time_SLOW = 0;
   uint32_t current_time = millis();
   
-  if (current_time - last_update_time_30ms >= TIMER_PERIOD_MS*2) {
+  if (current_time - last_update_time_30ms >= TIMER_PERIOD_MS*2) { //30ms *2
     last_update_time_30ms = current_time;
     switch (State_Machine) {
     case WORK_STATE:
@@ -224,8 +243,19 @@ ISR(TIMER1_COMPA_vect) {
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 5, 5));
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 69, 0));
       }
+      strip.setPixelColor(random(USE_RANGE),strip.Color(0,0,0));
     }
     strip.show();
+
+
+    /*LIGHT STATE*/
+    if(State_Machine == NEED_LIGHT_STATE && LIGHT_STATE_TIME < 700){
+      LIGHT_STATE_TIME++;
+      if(LIGHT_STATE_TIME > 600){
+        LIGHT_STATE_TIME = 900;
+        State_Machine = SLEEP_STATE;
+      }
+    }else if (State_Machine != NEED_LIGHT_STATE && LIGHT_STATE_TIME < 700) LIGHT_STATE_TIME = 0;
   }
 
 }
