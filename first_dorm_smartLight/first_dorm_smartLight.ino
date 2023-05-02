@@ -72,6 +72,7 @@ void setup() {
   pinMode(trigPin, OUTPUT);         
   pinMode(echoPin, INPUT);
 
+  RELAY_SWITCH(true);
 }
 
 // 定義上下界
@@ -117,6 +118,7 @@ void CHANGE_STATE(int distance){
   if(leaveNEED_LIGHT_STATE && distance < LOWEST_DISTANCE){
     leaveNEED_LIGHT_STATE = false;
     State_Machine = (State_Machine == NEED_LIGHT_STATE) ? lastResult : NEED_LIGHT_STATE;
+    // lastResult    = (State_Machine == NEED_LIGHT_STATE) ? NEED_LIGHT_STATE : lastResult;
     return;
   }else if(distance >= LOWEST_DISTANCE) leaveNEED_LIGHT_STATE = true;
   if(State_Machine == NEED_LIGHT_STATE) return;
@@ -188,7 +190,6 @@ int SCAN(void){
   pinMode(echoPin, INPUT);             // 讀取 echo 的電位
   duration = pulseIn(echoPin, HIGH);   // 收到高電位時的時間
   cm = (duration/2) / 29.1;         // 將時間換算成距離 cm
-  Serial.print(State_Machine);
   Serial.println(cm);
   delay(scanDelayTime);
   cm = constrain(cm, 0, 150); // 將距離限制在最小值和最大值之間
