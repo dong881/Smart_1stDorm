@@ -51,8 +51,7 @@ DB_Function.prototype.doGET_Active = function(e){
   FunctionName = e.parameter.Fun;
   InputStr = e.parameter.In;
   if(FunctionName == "saveData"){
-    SAVE_DATA(InputStr);
-    whatToReturn = "ACK";
+    whatToReturn = SAVE_DATA(InputStr);
   }
   return whatToReturn;
 }
@@ -106,6 +105,8 @@ function recordStayTime(Date, Time) {
 }
 
 function SAVE_DATA(InputStr){
+  if(LOG_Sheet.getRange("B4").getValue() == "你正" && InputStr == "ON") return "repetitive action";
+  if(LOG_Sheet.getRange("B4").getValue() != "你正" && InputStr == "OFF") return "repetitive action";
   /*先判斷是否換日 */
   var TitleDate = TitleDay.getValue().substr(8,5);
   var TodayDate = Utilities.formatDate(new Date(),"GMT+8","MM/dd");
@@ -115,5 +116,6 @@ function SAVE_DATA(InputStr){
   }
   if(InputStr == "ON")  GET_ON();
   else if(InputStr == "OFF")  GET_OFF();
-  else return;
+  else return "no work";
+  return "ACK";
 }
