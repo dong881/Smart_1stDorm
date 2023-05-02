@@ -250,13 +250,16 @@ ISR(TIMER1_COMPA_vect) {
 
 
     /*LIGHT STATE*/
+    Serial.print("\t");
+    Serial.print(LIGHT_STATE_TIME);
     if(State_Machine == NEED_LIGHT_STATE && LIGHT_STATE_TIME < 700){
       LIGHT_STATE_TIME++;
       if(LIGHT_STATE_TIME > 600){
         LIGHT_STATE_TIME = 900;
         State_Machine = SLEEP_STATE;
+        lastResult = NEED_LIGHT_STATE;
       }
-    }else if (State_Machine != NEED_LIGHT_STATE && LIGHT_STATE_TIME < 700) LIGHT_STATE_TIME = 0;
+    }else if (State_Machine != NEED_LIGHT_STATE && LIGHT_STATE_TIME == 900) LIGHT_STATE_TIME = 0;
   }
 
 }
