@@ -4,7 +4,7 @@ import sys
 
 session = requests.Session()
 
-API_URL = "https://script.google.com/macros/s/AKfycbyXGOBIQyUtYFDaCPXK_HGjILYlMlMBSj3g5-aFcvAvFZG8niOk2PwY06MFvc3zcmV-/exec"
+API_URL = "https://script.google.com/macros/s/AKfycbyutB2OyhAhG7E6m_8OE9CQDR_CmMxhYxntRXwVgcdNLX7qPOdplrVPlQwITwpci8qy/exec"
 
 
 try:
