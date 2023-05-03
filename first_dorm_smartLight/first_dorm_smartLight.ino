@@ -78,7 +78,7 @@ void setup() {
 // 定義上下界
 const int LOWER_THRESHOLD_DISTANCE = 80; // 下界設為 n 公分
 const int UPPER_THRESHOLD_DISTANCE = 100; // 上界設為 n 公分
-const int LOWEST_DISTANCE = 7;
+const int LOWEST_DISTANCE = 15;
 const int RED_DISTANCE = 55;
 const int GREEN_DISTANCE = 85;
 // 宣告需要更新 LED 燈條的變數
@@ -114,14 +114,22 @@ int debounceCount = 0;
 // 宣告變數紀錄前一次判斷結果
 State lastResult = WORK_STATE;
 bool leaveNEED_LIGHT_STATE = true;
+int low_distance_counter = 0; // 計算距離低於LOWEST_DISTANCE的次數
+
 void CHANGE_STATE(int distance){
-  if(leaveNEED_LIGHT_STATE && distance < LOWEST_DISTANCE){
-    leaveNEED_LIGHT_STATE = false;
-    State_Machine = (State_Machine == NEED_LIGHT_STATE) ? lastResult : NEED_LIGHT_STATE;
-    // lastResult    = (State_Machine == NEED_LIGHT_STATE) ? NEED_LIGHT_STATE : lastResult;
-    return;
-  }else if(distance >= LOWEST_DISTANCE) leaveNEED_LIGHT_STATE = true;
-  if(State_Machine == NEED_LIGHT_STATE) return;
+  if (leaveNEED_LIGHT_STATE && distance <= LOWEST_DISTANCE) {
+    low_distance_counter++;
+    if (low_distance_counter >= 3) { // 如果距離連續低於LOWEST_DISTANCE n 次或以上
+      leaveNEED_LIGHT_STATE = false;
+      State_Machine = (State_Machine == NEED_LIGHT_STATE) ? lastResult : NEED_LIGHT_STATE;
+      // lastResult    = (State_Machine == NEED_LIGHT_STATE) ? NEED_LIGHT_STATE : lastResult;
+    }
+  } else {
+    leaveNEED_LIGHT_STATE = true;
+    low_distance_counter = 0; // 如果距離不低於LOWEST_DISTANCE，則重置低距離計數器
+  }
+  if (State_Machine == NEED_LIGHT_STATE) return;
+  
 
   State result = WORK_STATE;
   // 判斷是否符合上下界
@@ -250,8 +258,6 @@ ISR(TIMER1_COMPA_vect) {
 
 
     /*LIGHT STATE*/
-    Serial.print("\t");
-    Serial.print(LIGHT_STATE_TIME);
     if(State_Machine == NEED_LIGHT_STATE && LIGHT_STATE_TIME < 700){
       LIGHT_STATE_TIME++;
       if(LIGHT_STATE_TIME > 600){

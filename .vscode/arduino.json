@@ -1,6 +1,6 @@
 {
-    "sketch": "first_dorm_smartLight\\first_dorm_smartLight.ino",
     "port": "COM4",
     "board": "arduino:avr:uno",
-    "programmer": "avrisp"
+    "programmer": "avrisp",
+    "sketch": "first_dorm_smartLight\\first_dorm_smartLight.ino"
 }
