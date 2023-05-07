@@ -4,12 +4,14 @@ from luma.core.render import canvas
 import time
 import requests
 from datetime import datetime, timedelta
+import sys
+
+Authorization = 'CWB-D5826CB0-A0C6-4D5D-9CC4-7E62D49FD6EE'
 
 # 定義函式，從交通部氣象局網站獲取當天天氣預報
-def get_weather_forecast():
+def get_weather_forecast(TODAY_Date):
     # 獲取當天日期
     delat = 0
-    TODAY_Date = datetime.now()
     today = (TODAY_Date+ timedelta(days=delat)).strftime('%Y-%m-%d')
     tomorrow = (TODAY_Date+ timedelta(days=delat+1)).strftime('%Y-%m-%d')
     print(today + " ~ " + tomorrow)
@@ -17,7 +19,7 @@ def get_weather_forecast():
     type = "T,PoP6h" #溫度(3h)、降雨機率(6h)
     NowTime = ("0" if(TODAY_Date.hour<10) else "" )+ str(TODAY_Date.hour)
     print(NowTime)
-    url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-D0047-061?Authorization=CWB-D5826CB0-A0C6-4D5D-9CC4-7E62D49FD6EE&limit=8&locationName=%E5%A4%A7%E5%AE%89%E5%8D%80&elementName='+ type +'&timeFrom='+today+'T'+NowTime+'%3A00%3A00&timeTo='+tomorrow+'T'+NowTime+'%3A00%3A00'
+    url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-D0047-061?Authorization='+Authorization+'&limit=8&locationName=%E5%A4%A7%E5%AE%89%E5%8D%80&elementName='+ type +'&timeFrom='+today+'T'+NowTime+'%3A00%3A00&timeTo='+tomorrow+'T'+NowTime+'%3A00%3A00'
     # 用 requests 套件發送 GET 請求獲取資料
     response = requests.get(url)
 
@@ -27,13 +29,13 @@ def get_weather_forecast():
     PoPdata = data["records"]["locations"][0]["location"][0]["weatherElement"][1]["time"]
     T_data = data["records"]["locations"][0]["location"][0]["weatherElement"][0]["time"]
     # 從資料中提取出每個時間段的平均溫度
-    # print(PoPdata)
+    print(PoPdata)
     print(T_data)
 
     TDataList = [d['elementValue'][0]['value'] for d in T_data]
     PopDataList = [d['elementValue'][0]['value'] for d in PoPdata]
-    # print(TDataList)
-    # print(PopDataList)
+    print(TDataList)
+    print(PopDataList)
     return temperature_to_led_levels(TDataList),PoP_to_led_levels(PopDataList)
 
 
@@ -56,13 +58,16 @@ def temperature_to_led_levels(temperature):
         levels.append(level)
     return levels
 
+# NowPoPvalue = -1
 def PoP_to_led_levels(Pop):
     Pop = [int(t) for t in Pop]
     levels = []
     PoP_level = 60
     for p in Pop:
-        levels.append(round(p>PoP_level))
-        levels.append(round(p>PoP_level))
+        levels.append(round(p>=PoP_level))
+        levels.append(round(p>=PoP_level))
+    # levels.insert(0,NowPoPvalue if NowPoPvalue!=-1 else levels[0])
+    # levels.pop()
     return levels
 
 # initialize SPI interface for the LED matrix
@@ -111,13 +116,25 @@ def calculate_output(hour):
     else:
         return 0
 
-def display_heights(bool,heights,PoP_format):
+def calculate_output_forPoP(hour):
+    if hour in [1, 2, 3, 4, 5, 6]:
+        return 1
+    elif hour in [7, 8, 9, 10, 11, 12]:
+        return 3
+    elif hour in [13, 14, 15, 16, 17, 18]:
+        return 5
+    elif hour in [19, 20, 21, 22, 23, 0]:
+        return 7
+    else:
+        return 0
+
+def display_heights(bool,heights,PoP_format,IndexCol):
     # set the brightness level of the LED matrix
     device.contrast(30)
     # display the heights on the LED matrix
     with canvas(device) as draw:
         for i in range(8):
-            if bool and i==calculate_output(datetime.now().hour):
+            if bool and i==IndexCol:
                 continue 
             height = heights[i]
             for j in range(height):
@@ -126,22 +143,34 @@ def display_heights(bool,heights,PoP_format):
                 draw.point((i, 7), fill="white")
 # START_LOGO()
 
-sec = 60*40
+sec = 60*40*99
 T_format = []
 PoP_format = []
+# TODAY_Date = datetime.now()
+
 while 1:
-    if sec == 60*40: # 每隔40分鐘更新一次資料
+    if sec >= 60*40: # 每隔40分鐘更新一次資料
+        TODAY_Date = datetime.now()
+        # TODAY_Date = datetime.ate + timedelta(hours=0))
+        thisHour = TODAY_Date.hour
+        print(str(thisHour))
         START_LOGO()
-        sec = 0
-        ArrayData = get_weather_forecast()
+        ArrayData = get_weather_forecast(TODAY_Date)
         print(ArrayData)
-        T_format   = shift_array(ArrayData[0],calculate_output(datetime.now().hour))
-        PoP_format = shift_array(ArrayData[1],calculate_output(datetime.now().hour))
+        IndexCol = calculate_output(thisHour)
+        PoPIndexCol = calculate_output_forPoP(thisHour)
+        T_format   = shift_array(ArrayData[0],IndexCol)
+        if sec == 60*40*99 or thisHour not in [7,8,9,13,14,15,19,20,21,1,2,3]:
+            PoP_format = shift_array(ArrayData[1],PoPIndexCol)
         print(T_format)
         print(PoP_format)
-    display_heights(sec%2,T_format,PoP_format)
+        sys.stdout.flush()
+        sec = 0
+    display_heights(sec%2,T_format,PoP_format,IndexCol)
     sec += 1
     time.sleep(1)
+    # TODAY_Date =  (TODAY_Date + timedelta(hours=1))
+
     
 
 
