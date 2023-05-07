@@ -69,10 +69,10 @@ v2.0
     =TEXT(SUM(D3:D)/60,"0")&"小時："&MOD(SUM(D3:D),60)&"分"
     
 - 判斷離開時間條件格式設定公式：
-    =(IF(NOT(ISBLANK(D4)),"true","false"))="true"
+    =IF(AND(C5=1,C4=0), "true", "false")="true"
 
 - 判斷坐下時間條件格式設定公式：
-    =(IF(NOT(ISBLANK(D6)),"true","false"))="true"
+    =IF(AND(C5=0,C4=1), "true", "false")="true"
     
 - 圖表格式設定：
 ![image](https://user-images.githubusercontent.com/52557611/224533583-99f4b4e1-5dd5-43af-82aa-3d4675445682.png)
@@ -83,4 +83,6 @@ DEMO: <br>
 > 利用試算表條件格式設定公式分辨，🟥紅色：坐下時間、⬜灰色：離開時間以及單次所待的時間長度
 
 ![image](https://user-images.githubusercontent.com/52557611/200508630-db91f790-70d0-4f37-9a2f-77011b82b5fb.png)
+- 新增分析每周每時所待分布圖
+![image](https://user-images.githubusercontent.com/52557611/236018799-790f053e-4940-4565-be04-e7c836d6dbb3.png)
 ![image](https://user-images.githubusercontent.com/52557611/200508716-a0b63234-7bbd-4126-899f-baeafdf9d480.png)
