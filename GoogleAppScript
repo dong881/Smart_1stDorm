@@ -81,12 +81,21 @@ function GET_OFF(){
   let diff_s = new Date().getTime() - LOG_Sheet.getRange("A1").getValue().getTime();
   LOG_Sheet.getRange("D4").setValue(parseInt(diff_s/60000));
   recordStayTime(new Date(), parseInt(diff_s/60000));
+  recordLeaveTimes(new Date());
+}
+
+function recordLeaveTimes(Date){
+  const hour = Date.getHours(); // 取得這個時間戳記的小時
+  const dayIndex = Date.getDay(); // 取得這個時間戳記是星期幾
+  const targetCell = Analyze_Sheet.getRange(hour + 3, dayIndex + 2 +11); // 取得要儲存資料的儲存格
+  const currentValue = targetCell.getValue() || 0; // 取得目前儲存格的值，如果是空的就設定為0
+  targetCell.setValue(currentValue + 1); // 壘加到目前的值
 }
 
 function recordStayTime(Date, Time) {
   const hour = Date.getHours(); // 取得這個時間戳記的小時
   const dayIndex = Date.getDay(); // 取得這個時間戳記是星期幾
-  const targetCell = Analyze_Sheet.getRange(hour + 2, dayIndex + 2); // 取得要儲存資料的儲存格
+  const targetCell = Analyze_Sheet.getRange(hour + 3, dayIndex + 2); // 取得要儲存資料的儲存格
   const currentValue = targetCell.getValue() || 0; // 取得目前儲存格的值，如果是空的就設定為0
   if(Time <= Date.getMinutes()) targetCell.setValue(currentValue + Time); // 將這次的坐姿時間加到目前的值上
   else { //持續時間 超過 目前時間
@@ -106,7 +115,7 @@ function recordStayTime(Date, Time) {
 
 function SAVE_DATA(InputStr){
   if(LOG_Sheet.getRange("B4").getValue() == "你正" && InputStr == "ON") return "repetitive action";
-  if(LOG_Sheet.getRange("B4").getValue() != "你正" && InputStr == "OFF") return "repetitive action";
+  // if(LOG_Sheet.getRange("B4").getValue() != "你正" && InputStr == "OFF") return "repetitive action";
   /*先判斷是否換日 */
   var TitleDate = TitleDay.getValue().substr(8,5);
   var TodayDate = Utilities.formatDate(new Date(),"GMT+8","MM/dd");
