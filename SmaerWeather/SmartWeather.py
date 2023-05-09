@@ -1,3 +1,6 @@
+# commands:
+# ps aux | grep SmartWeather.py
+
 from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
@@ -46,15 +49,15 @@ def temperature_to_led_levels(temperature):
     temperature = [int(t) for t in temperature]
 
     # 計算最大和最小值，用於將溫度轉換為 8 階層
-    temperature_min = 16
-    temperature_max = 32
+    temperature_min = 12
+    temperature_max = 33
 
     # 將溫度轉換為 8 階層
     levels = []
     for t in temperature:
         if t>temperature_max: t = temperature_max
         if t<temperature_min: t = temperature_min
-        level = round(1+6 * (t - temperature_min) / (temperature_max - temperature_min))
+        level = round(7 * (t - temperature_min) / (temperature_max - temperature_min))
         levels.append(level)
     return levels
 
