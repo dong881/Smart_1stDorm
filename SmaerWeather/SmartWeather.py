@@ -152,27 +152,31 @@ PoP_format = []
 # TODAY_Date = datetime.now()
 
 while 1:
-    if sec >= 60*40: # 每隔40分鐘更新一次資料
-        TODAY_Date = datetime.now()
-        # TODAY_Date = datetime.ate + timedelta(hours=0))
-        thisHour = TODAY_Date.hour
-        print(str(thisHour))
-        START_LOGO()
-        ArrayData = get_weather_forecast(TODAY_Date)
-        print(ArrayData)
-        IndexCol = calculate_output(thisHour)
-        PoPIndexCol = calculate_output_forPoP(thisHour)
-        T_format   = shift_array(ArrayData[0],IndexCol)
-        if sec == 60*40*99 or thisHour not in [7,8,9,13,14,15,19,20,21,1,2,3]:
-            PoP_format = shift_array(ArrayData[1],PoPIndexCol)
-        print(T_format)
-        print(PoP_format)
-        sys.stdout.flush()
-        sec = 0
-    display_heights(sec%2,T_format,PoP_format,IndexCol)
-    sec += 1
-    time.sleep(1)
-    # TODAY_Date =  (TODAY_Date + timedelta(hours=1))
+    try:
+        if sec >= 60*40: # 每隔40分鐘更新一次資料
+            TODAY_Date = datetime.now()
+            # TODAY_Date = datetime.ate + timedelta(hours=0))
+            thisHour = TODAY_Date.hour
+            print(str(thisHour))
+            START_LOGO()
+            ArrayData = get_weather_forecast(TODAY_Date)
+            print(ArrayData)
+            IndexCol = calculate_output(thisHour)
+            PoPIndexCol = calculate_output_forPoP(thisHour)
+            T_format   = shift_array(ArrayData[0],IndexCol)
+            if sec == 60*40*99 or thisHour not in [7,8,9,13,14,15,19,20,21,1,2,3]:
+                PoP_format = shift_array(ArrayData[1],PoPIndexCol)
+            print(T_format)
+            print(PoP_format)
+            sys.stdout.flush()
+            sec = 0
+        display_heights(sec%2,T_format,PoP_format,IndexCol)
+        sec += 1
+        time.sleep(1)
+        # TODAY_Date =  (TODAY_Date + timedelta(hours=1))
+    except Exception as e:
+        print("An error occurred:", str(e))
+        time.sleep(1)
 
     
 
