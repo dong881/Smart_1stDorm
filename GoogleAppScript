@@ -105,7 +105,7 @@ function recordStayTime(Date, Time) {
     Date.setHours(Date.getHours() -1);  //遞減小時數 (JS會自動判斷遞減日期)
     /* For Last or more Hour */
     for(let t=Time; t>0; t-=60){
-      let targetCell = Analyze_Sheet.getRange(Date.getHours() + 2, Date.getDay() + 2); // 取得要儲存資料的儲存格
+      let targetCell = Analyze_Sheet.getRange(Date.getHours() + 3, Date.getDay() + 2); // 取得要儲存資料的儲存格
       let currentValue = targetCell.getValue() || 0; // 取得目前儲存格的值，如果是空的就設定為0
       targetCell.setValue(currentValue + (t>60?60:t)); // 將這次的坐姿時間加到目前的值上
       Date.setHours(Date.getHours() -1);
