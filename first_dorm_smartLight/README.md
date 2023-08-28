@@ -1,5 +1,3 @@
-Here is the code formatted as a README file:
-
 # LED / Relay Control Program
 
 ## Features
