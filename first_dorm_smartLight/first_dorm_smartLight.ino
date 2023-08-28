@@ -233,7 +233,7 @@ ISR(TIMER1_COMPA_vect) {
     }
   }
   /* Fire_Mode() */
-  if (current_time - last_update_time_SLOW >= 900) {
+  if (current_time - last_update_time_SLOW >= 450) {
     last_update_time_SLOW = current_time;
     int USE_RANGE = 0;
     switch (State_Machine) {
@@ -253,7 +253,7 @@ ISR(TIMER1_COMPA_vect) {
       strip.setBrightness(0);
     }else{
     /*Normal state*/
-      for(int i=0;i<USE_RANGE/5;i++){
+      for(int i=0;i<USE_RANGE/7;i++){
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 5, 5));
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 69, 0));
       }
