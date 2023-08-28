@@ -63,7 +63,7 @@ void setup() {
 
   // 初始化燈條
   strip.begin();
-  strip.show(); // 關閉所有燈珠
+  strip.show(); // 關閉所有燈
   strip.setBrightness(160); // Set BRIGHTNESS to about 1/5 (max = 255)
   Serial.begin(115200);             // Serial Port begin
 
@@ -76,7 +76,7 @@ void setup() {
 }
 
 // 定義上下界
-const int LOWER_THRESHOLD_DISTANCE = 80; // 下界設為 n 公分
+const int LOWER_THRESHOLD_DISTANCE = 85; // 下界設為 n 公分
 const int UPPER_THRESHOLD_DISTANCE = 100; // 上界設為 n 公分
 const int LOWEST_DISTANCE = 15;
 const int RED_DISTANCE = 55;
@@ -98,6 +98,7 @@ void loop() {
       break;   
     case NEED_LIGHT_STATE:
       digitalWrite(relayPin, HIGH);
+      /*Turn ON all LEDs*/
       strip.setBrightness(200);
       for (int i = 0; i < LED_COUNT; i++) 
         strip.setPixelColor(i, strip.Color(255,255,255));
@@ -213,6 +214,7 @@ ISR(TIMER1_COMPA_vect) {
   static uint32_t last_update_time_SLOW = 0;
   uint32_t current_time = millis();
   
+  /*Distance color mode*/
   if (current_time - last_update_time_30ms >= TIMER_PERIOD_MS*2) { //30ms *2
     last_update_time_30ms = current_time;
     switch (State_Machine) {
@@ -244,7 +246,7 @@ ISR(TIMER1_COMPA_vect) {
       SleepTime++;
       break;
     }
-    if(SleepTime > 2000){ //After 30 min.
+    if(SleepTime > 2000){ //After 30 min. Turn off all LEDs
       SleepTime = 2000;
       strip.setPixelColor(random(USE_RANGE),strip.Color(0,0,0));
     }else{
