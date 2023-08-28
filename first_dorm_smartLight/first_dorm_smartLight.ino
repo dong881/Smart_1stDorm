@@ -246,10 +246,13 @@ ISR(TIMER1_COMPA_vect) {
       SleepTime++;
       break;
     }
-    if(SleepTime > 2000){ //After 30 min. Turn off all LEDs
+    /*After 30 min. Turn off all LEDs*/
+    if(SleepTime > 2000){ 
       SleepTime = 2000;
       strip.setPixelColor(random(USE_RANGE),strip.Color(0,0,0));
+      strip.setBrightness(0);
     }else{
+    /*Normal state*/
       for(int i=0;i<USE_RANGE/5;i++){
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 5, 5));
         strip.setPixelColor(random(USE_RANGE),strip.Color(255, 69, 0));
