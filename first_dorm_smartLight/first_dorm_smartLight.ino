@@ -77,7 +77,7 @@ void setup() {
 
 // 定義上下界
 const int LOWER_THRESHOLD_DISTANCE = 85; // 下界設為 n 公分
-const int UPPER_THRESHOLD_DISTANCE = 100; // 上界設為 n 公分
+const int UPPER_THRESHOLD_DISTANCE = 105; // 上界設為 n 公分
 const int LOWEST_DISTANCE = 15;
 const int RED_DISTANCE = 55;
 const int GREEN_DISTANCE = 85;
